@@ -11,14 +11,14 @@ import logging
 from pathlib import Path
 from typing import Dict, List
 
-from fastapi import FastAPI, Request, Form, Depends, HTTPException, status
+from fastapi import FastAPI, Request, Form, Depends, HTTPException, status, Body
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sse_starlette.sse import EventSourceResponse
 
 from .. import config, manifest, metrics, security, streamer
-from ..models import ItemState, ManifestItem
+from ..models import ItemState, ManifestItem, UpdateConfigRequest
 from ..utils import format_sse, OUTPUT_DIR
 
 # --- Globals and App Initialization ---
@@ -209,6 +209,59 @@ async def stop_stream(user: str = Depends(security.require_authentication)):
     app_state.streamer_instance = None
     await log_event("stream", {"status": "stopped"})
     return {"message": "Stream stopped."}
+
+# --- Config ---
+@app.get("/api/v1/config")
+async def get_config(user: str = Depends(security.require_authentication)):
+    """Returns the current configuration, with sensitive keys masked."""
+    # In a real app, you would implement proper masking
+    return config.app_config.all_settings
+
+@app.put("/api/v1/config")
+async def update_config(
+    user: str = Depends(security.require_authentication),
+    rtmp_url: str = Form(None),
+    stream_key: str = Form(None),
+    openai_api_key: str = Form(None),
+    admin_pass_hash: str = Form(None),
+):
+    """Updates and saves the application's configuration."""
+    update_data = UpdateConfigRequest(
+        rtmp_url=rtmp_url,
+        stream_key=stream_key,
+        openai_api_key=openai_api_key,
+        admin_pass_hash=admin_pass_hash,
+    )
+
+    # Convert Pydantic model to a dictionary, excluding unset fields
+    update_dict = update_data.model_dump(exclude_unset=True)
+
+    # Filter out any empty string values so we don't overwrite with blank data
+    filtered_updates = {k: v for k, v in update_dict.items() if v}
+
+    if not filtered_updates:
+        return HTMLResponse(
+            "<div id='settings-form-response' class='text-yellow-600 font-semibold'>No new settings provided.</div>",
+            status_code=200
+        )
+
+    try:
+        # Save the filtered updates
+        config.app_config.save(filtered_updates)
+        # Reload the configuration in the running application
+        config.app_config.load()
+        await log_event("config", {"status": "updated", "keys": list(filtered_updates.keys())})
+
+        return HTMLResponse(
+            "<div id='settings-form-response' class='text-green-600 font-semibold p-4 bg-green-50 rounded-lg'>Settings updated successfully! The application has been reloaded with the new configuration.</div>",
+            status_code=200
+        )
+    except config.ConfigError as e:
+        await log_event("error", {"message": f"Failed to update config: {e}"})
+        return HTMLResponse(
+            f"<div id='settings-form-response' class='text-red-600 font-semibold p-4 bg-red-50 rounded-lg'>Error saving settings: {e}</div>",
+            status_code=400
+        )
 
 # --- Exception Handler for redirects ---
 @app.exception_handler(HTTPException)

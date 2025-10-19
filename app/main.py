@@ -14,11 +14,6 @@ import logging
 import os
 import sys
 
-# Add the project root to the Python path to allow running as a module.
-# This is necessary for `python -m app.main ...` commands.
-project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, project_root)
-
 from app.config import app_config, ConfigError
 from app.utils import setup_logging, setup_paths
 from app.web.server import app as fastapi_app
@@ -123,8 +118,7 @@ def main():
         process_render_queue()
 
     elif args.command == "validate":
-        logger.info("Validation successful (placeholder).")
-        # In a real app, this would check ffmpeg, permissions, etc.
+        validate_environment()
 
     elif args.command == "approve":
         from app.manifest import manifest
@@ -145,6 +139,58 @@ def main():
 
     else:
         parser.print_help()
+
+def validate_environment():
+    """
+    Performs a series of checks to validate the application's environment.
+    Exits with a non-zero status code if any check fails.
+    """
+    logger.info("--- Running Environment Validation ---")
+    errors = 0
+
+    # 1. Check for FFmpeg
+    try:
+        import shutil
+        if not shutil.which("ffmpeg"):
+            logger.error("Validation Error: `ffmpeg` command not found. FFmpeg is essential for video processing.")
+            errors += 1
+        else:
+            logger.info("FFmpeg found successfully.")
+    except Exception as e:
+        logger.error(f"An error occurred while checking for FFmpeg: {e}")
+        errors += 1
+
+    # 2. Validate config.json against schema
+    try:
+        # The app_config.load() already does this, but we can be explicit.
+        app_config.load()
+        logger.info("Configuration file is valid against the schema.")
+    except ConfigError as e:
+        logger.error(f"Validation Error: Configuration is invalid. {e}")
+        errors += 1
+
+    # 3. Check for write permissions in the output directory
+    try:
+        from app.utils import OUTPUT_DIR
+        test_file = OUTPUT_DIR / ".permission_test"
+        with open(test_file, "w") as f:
+            f.write("test")
+        os.remove(test_file)
+        logger.info("Write permissions for the output directory are correct.")
+    except IOError as e:
+        logger.error(f"Validation Error: Cannot write to the output directory at '{OUTPUT_DIR}'. Check permissions. {e}")
+        errors += 1
+    except Exception as e:
+        logger.error(f"An unexpected error occurred while checking write permissions: {e}")
+        errors += 1
+
+    if errors == 0:
+        logger.info("--- Environment Validation Successful ---")
+        sys.exit(0)
+    else:
+        logger.error(f"--- Environment Validation Failed with {errors} error(s) ---")
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  auto-streamer:
+    build: .
+    container_name: auto-streamer
+    ports:
+      - "${UI_PORT:-8080}:8080"
+    volumes:
+      - ./output:/app/output
+      - ./config.json:/app/config.json
+    environment:
+      - TZ=America/Sao_Paulo
+      - RTMP_URL=${RTMP_URL}
+      - STREAM_KEY=${STREAM_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ADMIN_PASS_HASH=${ADMIN_PASS_HASH}
+    restart: unless-stopped

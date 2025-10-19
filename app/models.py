@@ -9,7 +9,9 @@ data consistency across different parts of the application.
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Literal, Optional, TypedDict
+from typing import Dict, List, Optional
+from typing_extensions import Literal, TypedDict
+from pydantic import BaseModel, Field
 
 # --- Enums for State and other controlled vocabularies ---
 
@@ -129,3 +131,12 @@ class AppMetrics:
                 "human_approved_total": self.human_approvals
             }
         }
+
+# --- Pydantic Models for API Validation ---
+
+class UpdateConfigRequest(BaseModel):
+    """Defines the fields that can be updated in the config via the API."""
+    rtmp_url: Optional[str] = Field(None, description="The RTMP URL for the stream.")
+    stream_key: Optional[str] = Field(None, description="The stream key for the RTMP endpoint.")
+    openai_api_key: Optional[str] = Field(None, description="The API key for OpenAI TTS.")
+    admin_pass_hash: Optional[str] = Field(None, description="A new bcrypt hash for the admin password.")

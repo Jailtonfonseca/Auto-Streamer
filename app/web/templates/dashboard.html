@@ -56,4 +56,16 @@
         </div>
     </div>
 </div>
+
+<!-- Global SSE Log Viewer -->
+<div class="fixed bottom-4 right-4 w-96 bg-gray-900 text-white p-4 rounded-lg shadow-lg"
+     hx-sse="connect:/api/v1/logs/stream">
+    <h3 class="font-bold border-b border-gray-700 mb-2 pb-2">Event Log</h3>
+    <div id="log-container" class="h-48 overflow-y-auto text-sm space-y-1">
+        <div hx-sse="swap:pipeline" class="swap-outer"></div>
+        <div hx-sse="swap:status" class="swap-outer"></div>
+        <div hx-sse="swap:stream" class="swap-outer"></div>
+        <div hx-sse="swap:review" class="swap-outer"></div>
+    </div>
+</div>
 {% endblock %}

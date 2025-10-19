@@ -6,7 +6,6 @@
     <title>Auto-Streamer Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <script src="https://unpkg.com/htmx.org/dist/ext/sse.js"></script>
 </head>
 <body class="h-full">
     <div class="min-h-full">
@@ -53,18 +52,6 @@
                 {% block content %}{% endblock %}
             </div>
         </main>
-    </div>
-
-    <!-- Global SSE Log Viewer -->
-    <div class="fixed bottom-4 right-4 w-96 bg-gray-900 text-white p-4 rounded-lg shadow-lg"
-         hx-ext="sse" sse-connect="/api/v1/logs/stream">
-        <h3 class="font-bold border-b border-gray-700 mb-2 pb-2">Event Log</h3>
-        <div id="log-container" class="h-48 overflow-y-auto text-sm space-y-1">
-            <div sse-swap="pipeline" class="swap-outer"></div>
-            <div sse-swap="status" class="swap-outer"></div>
-            <div sse-swap="stream" class="swap-outer"></div>
-            <div sse-swap="review" class="swap-outer"></div>
-        </div>
     </div>
 
 </body>
