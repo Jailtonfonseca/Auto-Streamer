@@ -54,11 +54,17 @@ class Scraper:
         Extracts the main image URL from the page's metadata or content.
         Prioritizes Open Graph (og:image), then looks for a suitable <img> tag.
         """
-        # 1. Try Open Graph
-        og_image = soup.find("meta", property="og:image")
-        if og_image and og_image.get("content"):
-            logger.info(f"Found og:image: {og_image['content']}")
-            return urljoin(url, og_image["content"])
+        # 1. Try Open Graph and Twitter Card images
+        meta_tags = [
+            {"property": "og:image"},
+            {"name": "twitter:image"},
+        ]
+        for tag_attrs in meta_tags:
+            image_tag = soup.find("meta", **tag_attrs)
+            if image_tag and image_tag.get("content"):
+                image_url = urljoin(url, image_tag["content"])
+                logger.info(f"Found image in meta tag {tag_attrs}: {image_url}")
+                return image_url
 
         # 2. Find the most prominent <img> tag
         # (A simple heuristic: largest image in the main content area)
@@ -88,43 +94,47 @@ class Scraper:
         return None
 
     def _generate_placeholder_image(self, title: str, path: Path) -> bool:
-        """Creates a placeholder image with the title text."""
+        """Creates a placeholder image with wrapped title text."""
         try:
             output_cfg = app_config.get("output", {})
             width, height = output_cfg.get("width", 1280), output_cfg.get("height", 720)
+            img = Image.new('RGB', (width, height), color=(30, 30, 30))
+            draw = ImageDraw.Draw(img)
 
-            img = Image.new('RGB', (width, height), color = (30, 30, 30))
-            d = ImageDraw.Draw(img)
-
-            # Use a basic font. For better results, provide a path to a .ttf file.
             try:
-                font = ImageFont.truetype("DejaVuSans.ttf", size=40)
+                font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+                if not Path(font_path).exists():
+                    font_path = "arial.ttf" # Fallback for local testing
+                font = ImageFont.truetype(font_path, size=40)
             except IOError:
+                logger.warning("Default font not found, using Pillow's default.")
                 font = ImageFont.load_default()
 
-            # Simple text wrapping
-            lines = []
-            words = title.split()
-            current_line = ""
-            for word in words:
-                if d.textlength(current_line + word, font=font) <= width * 0.8:
-                    current_line += f" {word}"
-                else:
-                    lines.append(current_line.strip())
-                    current_line = word
-            lines.append(current_line.strip())
+            # Improved text wrapping
+            import textwrap
+            margin = width * 0.1
+            max_width = width - 2 * margin
 
-            text_y = (height - len(lines) * 45) / 2
-            for line in lines:
-                line_width = d.textlength(line, font=font)
-                d.text((width - line_width) / 2, text_y, line, fill=(255, 255, 255), font=font)
-                text_y += 45
+            # Estimate average character width to wrap the text
+            avg_char_width = draw.textlength("a", font=font)
+            wrap_width = int(max_width / (avg_char_width if avg_char_width > 0 else 10))
+
+            lines = textwrap.wrap(title, width=wrap_width)
+
+            total_text_height = len(lines) * (font.size + 5)
+            y_start = (height - total_text_height) / 2
+
+            for i, line in enumerate(lines):
+                line_width = draw.textlength(line, font=font)
+                x = (width - line_width) / 2
+                y = y_start + i * (font.size + 5)
+                draw.text((x, y), line, font=font, fill=(255, 255, 255))
 
             img.save(path)
             logger.info(f"Generated placeholder image at {path}")
             return True
         except Exception as e:
-            logger.error(f"Failed to generate placeholder image: {e}")
+            logger.error(f"Failed to generate placeholder image: {e}", exc_info=True)
             return False
 
     def scrape_article(self, url: str) -> Tuple[Optional[str], Optional[str]]:

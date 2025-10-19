@@ -28,95 +28,48 @@ class TTSGenerator:
     """A class to handle TTS generation with the OpenAI API."""
 
     def __init__(self):
-        # We don't initialize the client here anymore to allow for dynamic config updates.
-        pass
+        self.config = app_config.get("tts", {})
+        self.api_key = self.config.get("api_key")
+        if not self.api_key:
+            raise ValueError("OpenAI API key is not configured.")
 
-    def _get_openai_client(self) -> OpenAI:
-        """
-        Creates and returns an OpenAI client based on the current application config.
-        This ensures that API key changes are picked up immediately.
-        """
-        config = app_config.get("tts", {})
-        api_key = config.get("api_key")
-
-        if not api_key:
-            raise ValueError("OpenAI API key is not configured in the current settings.")
-
-        return OpenAI(
-            api_key=api_key,
-            base_url=config.get("base_url") # Optional, for proxies
+        self.client = OpenAI(
+            api_key=self.api_key,
+            base_url=self.config.get("base_url")
         )
 
     def _chunk_text(self, text: str) -> List[str]:
         """
-        Splits text into chunks that are safe for the TTS API.
-        OpenAI's TTS has a 4096 character limit per request. We'll use a smaller
-        limit from the config to be safe.
+        Splits text into chunks that are safe for the TTS API, respecting
+        paragraph and sentence boundaries where possible.
         """
-        config = app_config.get("tts", {})
-        chunk_size = config.get("chunk_chars", 2500)
+        chunk_size = self.config.get("chunk_chars", 3000)
         if len(text) <= chunk_size:
             return [text]
 
-        chunks = []
-        # Split by paragraphs first to maintain natural pauses
-        paragraphs = text.split('\n')
-        current_chunk = ""
-        for p in paragraphs:
-            if not p.strip():
-                continue
+        import textwrap
 
-            if len(current_chunk) + len(p) + 1 < chunk_size:
-                current_chunk += p + "\n"
-            else:
-                # If a single paragraph is too long, we must split it hard
-                if len(p) > chunk_size:
-                    if current_chunk: # Add the previous part
-                        chunks.append(current_chunk)
-                        current_chunk = ""
-
-                    # Split the oversized paragraph by sentences or words
-                    # This is a simple split, more advanced logic could be used
-                    start = 0
-                    while start < len(p):
-                        end = start + chunk_size
-                        # Try to find a good split point
-                        split_pos = p.rfind('.', start, end)
-                        if split_pos == -1:
-                           split_pos = p.rfind(' ', start, end)
-                        if split_pos == -1 or split_pos < start:
-                            split_pos = end
-
-                        chunks.append(p[start:split_pos+1])
-                        start = split_pos + 1
-                else: # The paragraph fits in a new chunk
-                    chunks.append(current_chunk)
-                    current_chunk = p + "\n"
-
-        if current_chunk:
-            chunks.append(current_chunk)
-
+        # Use textwrap to handle the basic splitting
+        chunks = textwrap.wrap(text, chunk_size, break_long_words=True, replace_whitespace=False)
         logger.info(f"Split text into {len(chunks)} chunks.")
         return chunks
 
     @network_retry
     def _generate_audio_chunk(self, text: str, output_path: Path):
         """Calls the OpenAI API to generate audio for a single text chunk."""
-        client = self._get_openai_client()
-        config = app_config.get("tts", {})
         try:
-            response = client.audio.speech.create(
-                model=config.get("model", "tts-1"),
-                voice=config.get("voice", "alloy"),
+            response = self.client.audio.speech.create(
+                model=self.config.get("model", "tts-1"),
+                voice=self.config.get("voice", "alloy"),
                 input=text,
-                response_format=config.get("format", "mp3"),
-                speed=config.get("speed", 1.0),
+                response_format=self.config.get("format", "mp3"),
+                speed=self.config.get("speed", 1.0),
             )
             response.stream_to_file(output_path)
             logger.debug(f"Successfully generated audio chunk: {output_path}")
         except OpenAIError as e:
-            logger.error(f"OpenAI API error while generating audio for {output_path.stem}: {e}")
-            raise
+            logger.error(f"OpenAI API error for {output_path.stem}: {e}")
+            raise  # Re-raise to be caught by the network_retry decorator or the calling function
 
     def _concatenate_audio(self, chunk_paths: List[Path], final_path: Path):
         """
@@ -232,7 +185,12 @@ def process_tts_queue():
         logger.info("No items in the TTS queue.")
         return
 
-    tts_generator = TTSGenerator()
+    try:
+        tts_generator = TTSGenerator()
+    except ValueError as e:
+        logger.error(f"Failed to initialize TTSGenerator, likely due to missing API key: {e}")
+        return
+
     success_count = 0
     fail_count = 0
 
@@ -241,7 +199,6 @@ def process_tts_queue():
             success_count += 1
         else:
             fail_count += 1
-            # Update manifest to ERROR state to avoid reprocessing
             manifest.update_item(item['id'], {"state": ItemState.ERROR, "notes": "TTS generation failed"})
 
     logger.info(f"TTS processing run complete. Succeeded: {success_count}, Failed: {fail_count}")
