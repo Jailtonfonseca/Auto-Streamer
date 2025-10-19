@@ -100,9 +100,6 @@ OPENAI_API_KEY=sk-...
 # A bcrypt-hashed password for the web UI
 # Generate one for your chosen password. Example for "admin": $2b$12$...
 ADMIN_PASS_HASH='$2b$12$DwwA.a.c0.k5u...'
-
-# The port for the web UI
-UI_PORT=8080
 ```
 
 **2. Run the Application:**

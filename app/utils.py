@@ -18,11 +18,10 @@ from typing import Any, Dict, Generator, List, Optional
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 # --- Path Management ---
+import os
 
-# Assuming this file is in /app
-APP_DIR = Path(__file__).parent.resolve()
-ROOT_DIR = APP_DIR.parent
-OUTPUT_DIR = ROOT_DIR / "output"
+# Use /data for all persistent data, configurable via environment variable
+OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", "/data/output"))
 LOGS_DIR = OUTPUT_DIR / "logs"
 RAW_DIR = OUTPUT_DIR / "raw"
 AUDIO_DIR = OUTPUT_DIR / "audio"
