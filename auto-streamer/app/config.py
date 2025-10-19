@@ -7,7 +7,9 @@ and allows overriding specific values with environment variables.
 import json
 import logging
 import os
+import shutil
 from pathlib import Path
+from threading import Lock
 from typing import Any, Dict, Optional
 
 from jsonschema import validate
@@ -39,6 +41,7 @@ class Config:
         self._config_path = config_path
         self._schema_path = schema_path
         self._settings: Dict[str, Any] = {}
+        self._lock = Lock()
         self._schema: Dict[str, Any] = self._load_json(self._schema_path)
 
     def load(self) -> None:
@@ -140,6 +143,55 @@ class Config:
     def all_settings(self) -> Dict[str, Any]:
         """Returns a copy of all settings."""
         return self._settings.copy()
+
+    def save(self, new_settings: Dict[str, Any]) -> None:
+        """
+        Saves the updated configuration to the file.
+        This method is thread-safe.
+        """
+        with self._lock:
+            # Create a backup of the current config file
+            if self._config_path.exists():
+                backup_path = self._config_path.with_suffix(".json.bak")
+                try:
+                    shutil.copy2(self._config_path, backup_path)
+                    logger.info(f"Created configuration backup at {backup_path}")
+                except IOError as e:
+                    logger.warning(f"Failed to create configuration backup: {e}")
+
+            try:
+                # Merge the new settings into the current settings
+                # We do this to preserve any settings not exposed in the UI
+                for key, value in new_settings.items():
+                    if value is not None and value != "":
+                        # This is a simple merge. For nested dicts, a deep merge would be needed.
+                        # For now, we are only updating top-level keys in nested dicts.
+                        if key == "rtmp_url":
+                            self._settings["stream"]["rtmp_url"] = value
+                        elif key == "stream_key":
+                            self._settings["stream"]["stream_key"] = value
+                        elif key == "openai_api_key":
+                            self._settings["tts"]["api_key"] = value
+                        elif key == "admin_pass_hash":
+                            # This key might not exist, so we add it under a 'security' section
+                            self._settings.setdefault("security", {})["admin_pass_hash"] = value
+
+                # Validate before saving
+                self._validate(self._settings)
+
+                # Write the updated settings to the config file
+                with open(self._config_path, "w", encoding="utf-8") as f:
+                    json.dump(self._settings, f, indent=2)
+
+                logger.info(f"Configuration saved successfully to {self._config_path}")
+
+            except ValidationError as e:
+                logger.error(f"Validation failed while saving new configuration: {e}")
+                # Optionally, restore from backup here
+                raise ConfigError(f"New configuration is invalid: {e.message}")
+            except Exception as e:
+                logger.exception("An unexpected error occurred while saving the configuration.")
+                raise ConfigError(f"Could not save configuration file: {e}")
 
 # --- Singleton Instance ---
 # This part creates a single, globally accessible configuration object.

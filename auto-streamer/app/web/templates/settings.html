@@ -3,48 +3,79 @@
 {% block header %}Settings{% endblock %}
 
 {% block content %}
-<div class="bg-white p-8 rounded-lg shadow-md">
+<div class="bg-white p-8 rounded-lg shadow-md max-w-4xl mx-auto">
     <h2 class="text-2xl font-bold mb-6">Configuration</h2>
 
-    <div class="mb-6">
-        <p class="text-gray-700">
-            This interface provides a way to view and test the current configuration.
-            Editing the configuration directly via the API is a planned feature. For now, please edit the
-            <code class="bg-gray-200 text-sm p-1 rounded">config.json</code> file and restart the server.
+    <!-- Form for editing critical settings -->
+    <form hx-put="/api/v1/config" hx-target="this" hx-swap="outerHTML" class="space-y-6 bg-gray-50 p-6 rounded-lg border" id="settings-form">
+        <div id="settings-form-response" class="mb-4"></div>
+        <h3 class="text-xl font-semibold text-gray-800 border-b pb-2">Edit Critical Settings</h3>
+        <p class="text-sm text-gray-600">
+            Update your sensitive configuration here. Leave fields blank to keep the existing value.
+            Changes to RTMP and OpenAI keys will apply to the next stream or TTS job. A new password hash will apply on your next login.
         </p>
-    </div>
 
-    <div id="config-editor" class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-        <h3 class="font-bold text-lg mb-4">Current <code class="text-sm">config.json</code> (Secrets Masked)</h3>
-        <pre
-            class="whitespace-pre-wrap text-sm text-gray-800 max-h-96 overflow-y-auto"
-            hx-get="/api/v1/config"
-            hx-trigger="load"
-            hx-swap="innerHTML">Loading configuration...</pre>
-    </div>
+        <!-- RTMP URL -->
+        <div>
+            <label for="rtmp_url" class="block text-sm font-medium text-gray-700">RTMP URL</label>
+            <input type="text" name="rtmp_url" id="rtmp_url" placeholder="rtmp://a.rtmp.youtube.com/live2"
+                   class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
 
+        <!-- Stream Key -->
+        <div>
+            <label for="stream_key" class="block text-sm font-medium text-gray-700">Stream Key</label>
+            <input type="password" name="stream_key" id="stream_key" placeholder="••••••••••••••••"
+                   class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- OpenAI API Key -->
+        <div>
+            <label for="openai_api_key" class="block text-sm font-medium text-gray-700">OpenAI API Key</label>
+            <input type="password" name="openai_api_key" id="openai_api_key" placeholder="sk-••••••••••••••••"
+                   class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+        </div>
+
+        <!-- Admin Password Hash -->
+        <div>
+            <label for="admin_pass_hash" class="block text-sm font-medium text-gray-700">New Admin Password Hash</label>
+            <input type="password" name="admin_pass_hash" id="admin_pass_hash" placeholder="Starts with $2b$..."
+                   class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+             <p class="mt-2 text-xs text-gray-500">
+                Generate a new hash if you want to change the login password. Leave blank to keep the current one.
+            </p>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="flex justify-end">
+            <button type="submit"
+                    class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Save Settings
+            </button>
+        </div>
+    </form>
+
+    <!-- Test Buttons -->
     <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
         <button
             hx-post="/api/v1/config/test/scraper"
             hx-swap="none"
-            class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300">
+            class="bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300">
             Test Scraper
         </button>
         <button
             hx-post="/api/v1/config/test/tts"
             hx-swap="none"
-            class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300">
+            class="bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300">
             Test TTS
         </button>
         <button
             hx-post="/api/v1/config/test/rtmp"
             hx-swap="none"
-            class="bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300">
+            class="bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300">
             Test RTMP
         </button>
     </div>
-    <div id="test-results" class="mt-4 text-center">
-        <!-- Results from test buttons will be shown in the SSE log -->
-    </div>
+
 </div>
 {% endblock %}

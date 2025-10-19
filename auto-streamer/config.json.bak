@@ -1,8 +1,6 @@
 {
   "ingest": {
-    "rss_feeds": [
-      "https://exemplo.com/feed.xml"
-    ],
+    "rss_feeds": ["https://exemplo.com/feed.xml"],
     "max_items_per_run": 10,
     "dedupe_by": "guid_or_link",
     "min_pubdate_hours": 0,
@@ -41,13 +39,12 @@
     "max_retries": 3,
     "timeout_s": 120,
     "api_key_env": "OPENAI_API_KEY",
-    "base_url_env": "OPENAI_BASE_URL",
-    "api_key": "new-openai-key"
+    "base_url_env": "OPENAI_BASE_URL"
   },
   "slides_per_audio": 1,
   "stream": {
-    "rtmp_url": "rtmp://new-url.com/live",
-    "stream_key": "new-stream-key",
+    "rtmp_url": "rtmp://a.rtmp.youtube.com/live2",
+    "stream_key": "__ENV_OR_CONFIG__",
     "loop": true,
     "reconnect_backoff_s": 5,
     "tee_to": []
@@ -62,56 +59,33 @@
       "mode": "hybrid",
       "shadow_mode": true,
       "rules": {
-        "domain_whitelist": [
-          "g1.globo.com",
-          "agenciabrasil.ebc.com.br"
-        ],
+        "domain_whitelist": ["g1.globo.com","agenciabrasil.ebc.com.br"],
         "domain_blacklist": [],
-        "allow_languages": [
-          "pt",
-          "pt-BR"
-        ],
-        "block_keywords": [
-          "aposta",
-          "cassino",
-          "adulto",
-          "viol\u00eancia expl\u00edcita"
-        ],
-        "allow_keywords": [
-          "economia",
-          "tecnologia",
-          "educa\u00e7\u00e3o",
-          "sa\u00fade",
-          "cultura"
-        ],
+        "allow_languages": ["pt","pt-BR"],
+        "block_keywords": ["aposta","cassino","adulto","violência explícita"],
+        "allow_keywords": ["economia","tecnologia","educação","saúde","cultura"],
         "title_regex_allow": [],
         "title_regex_block": [],
         "min_text_chars": 600,
         "max_text_chars": 4000,
-        "min_image": {
-          "width": 640,
-          "height": 360
-        },
+        "min_image": {"width": 640, "height": 360},
         "min_pubdate_hours": 0,
         "max_pubdate_hours": 48,
         "duplicate_window_hours": 24,
         "similarity_threshold": 0.9,
         "require_https": true,
-        "nsfw_check": {
-          "enabled": true,
-          "threshold": 0.15
-        }
+        "nsfw_check": {"enabled": true, "threshold": 0.15}
       },
       "confidence_scoring": {
         "weights": {
-          "source_trust": 0.3,
-          "freshness": 0.2,
-          "length_quality": 0.2,
+          "source_trust": 0.30,
+          "freshness": 0.20,
+          "length_quality": 0.20,
           "keywords": 0.15,
           "nsfw_safety": 0.15
         },
         "pass_score": 0.75,
-        "soft_pass_score": 0.6
+        "soft_pass_score": 0.60
       },
       "auto_publish_strategy": "playlist_only",
       "insertion_policy": "append"
@@ -121,8 +95,5 @@
     "port": 8080,
     "secure_cookie": true,
     "theme": "system"
-  },
-  "security": {
-    "admin_pass_hash": "new-hash"
   }
 }

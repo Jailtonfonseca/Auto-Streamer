@@ -129,3 +129,5 @@ cython_debug/
 jules-scratch/
 output/
 *.log
+config.json
+config.json.bak

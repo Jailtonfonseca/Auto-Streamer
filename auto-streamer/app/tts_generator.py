@@ -28,16 +28,23 @@ class TTSGenerator:
     """A class to handle TTS generation with the OpenAI API."""
 
     def __init__(self):
-        self.config = app_config.get("tts", {})
+        # We don't initialize the client here anymore to allow for dynamic config updates.
+        pass
 
-        # Ensure API key is present
-        api_key = self.config.get("api_key")
+    def _get_openai_client(self) -> OpenAI:
+        """
+        Creates and returns an OpenAI client based on the current application config.
+        This ensures that API key changes are picked up immediately.
+        """
+        config = app_config.get("tts", {})
+        api_key = config.get("api_key")
+
         if not api_key:
-            raise ValueError("OpenAI API key is not configured. Set the OPENAI_API_KEY environment variable.")
+            raise ValueError("OpenAI API key is not configured in the current settings.")
 
-        self.client = OpenAI(
+        return OpenAI(
             api_key=api_key,
-            base_url=self.config.get("base_url") # Optional, for proxies
+            base_url=config.get("base_url") # Optional, for proxies
         )
 
     def _chunk_text(self, text: str) -> List[str]:
@@ -46,7 +53,8 @@ class TTSGenerator:
         OpenAI's TTS has a 4096 character limit per request. We'll use a smaller
         limit from the config to be safe.
         """
-        chunk_size = self.config.get("chunk_chars", 2500)
+        config = app_config.get("tts", {})
+        chunk_size = config.get("chunk_chars", 2500)
         if len(text) <= chunk_size:
             return [text]
 
@@ -94,13 +102,15 @@ class TTSGenerator:
     @network_retry
     def _generate_audio_chunk(self, text: str, output_path: Path):
         """Calls the OpenAI API to generate audio for a single text chunk."""
+        client = self._get_openai_client()
+        config = app_config.get("tts", {})
         try:
-            response = self.client.audio.speech.create(
-                model=self.config.get("model", "tts-1"),
-                voice=self.config.get("voice", "alloy"),
+            response = client.audio.speech.create(
+                model=config.get("model", "tts-1"),
+                voice=config.get("voice", "alloy"),
                 input=text,
-                response_format=self.config.get("format", "mp3"),
-                speed=self.config.get("speed", 1.0),
+                response_format=config.get("format", "mp3"),
+                speed=config.get("speed", 1.0),
             )
             response.stream_to_file(output_path)
             logger.debug(f"Successfully generated audio chunk: {output_path}")
@@ -179,9 +189,10 @@ class TTSGenerator:
         chunks = self._chunk_text(text)
         chunk_paths = []
 
+        config = app_config.get("tts", {})
         # Generate audio for each chunk
         for i, chunk in enumerate(chunks):
-            chunk_path = AUDIO_DIR / f"{item_id}_part{i+1}.{self.config.get('format', 'mp3')}"
+            chunk_path = AUDIO_DIR / f"{item_id}_part{i+1}.{config.get('format', 'mp3')}"
             try:
                 self._generate_audio_chunk(chunk, chunk_path)
                 chunk_paths.append(chunk_path)
@@ -192,7 +203,7 @@ class TTSGenerator:
                 return False
 
         # Concatenate and update manifest
-        final_audio_path = AUDIO_DIR / f"{item_id}_audio.{self.config.get('format', 'mp3')}"
+        final_audio_path = AUDIO_DIR / f"{item_id}_audio.{config.get('format', 'mp3')}"
 
         try:
             self._concatenate_audio(chunk_paths, final_audio_path)
