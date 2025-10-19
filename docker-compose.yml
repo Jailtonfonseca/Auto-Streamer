@@ -5,7 +5,7 @@ services:
     build: .
     container_name: auto-streamer
     ports:
-      - "${UI_PORT:-8080}:8080"
+      - "8080"
     volumes:
       - ./output:/app/output
       - ./config.json:/app/config.json

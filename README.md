@@ -105,9 +105,14 @@ With your `config.json` and `.env` files in place, simply run:
 ```bash
 docker-compose up --build
 ```
-The `--build` flag will build the image on the first run. The web interface will be available at `http://localhost:8080`.
+The `--build` flag will build the image on the first run. To run in the background, use `docker-compose up -d`.
 
-To run in the background, use `docker-compose up -d`.
+**Finding the Port:**
+Since the application now runs on a random port to avoid conflicts, you can find the assigned port by running:
+```bash
+docker ps
+```
+Look for the `auto-streamer` container and check the `PORTS` column. It will show something like `0.0.0.0:32768->8080/tcp`. In this example, the application is accessible at `http://localhost:32768`.
 
 ---
 
