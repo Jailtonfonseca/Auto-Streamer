@@ -16,6 +16,20 @@ It features a web-based dashboard for monitoring and control, a human approval w
 - **Dockerized**: Runs in a single, self-contained Docker container, compatible with both `x86_64` and `ARM64` architectures.
 - **Observable**: Provides metrics via a Prometheus endpoint and real-time logs in the UI.
 
+## Screenshots
+
+| Login Page | Dashboard |
+| :---: | :---: |
+| ![Login Page](docs/images/login.png) | ![Dashboard](docs/images/dashboard.png) |
+
+| Settings | Review Queue |
+| :---: | :---: |
+| ![Settings](docs/images/settings.png) | ![Review Queue](docs/images/review.png) |
+
+| Playlist |
+| :---: |
+| ![Playlist](docs/images/playlist.png) |
+
 ---
 
 ## Getting Started

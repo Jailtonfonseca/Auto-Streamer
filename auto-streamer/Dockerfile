@@ -15,6 +15,7 @@ RUN apt-get update \
     ffmpeg \
     git \
     tini \
+    fonts-dejavu-core \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

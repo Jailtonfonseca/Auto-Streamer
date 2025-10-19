@@ -152,21 +152,8 @@ async def health_check():
 # --- Pipeline ---
 @app.post("/api/v1/pipeline/start")
 async def start_pipeline(user: str = Depends(security.require_authentication)):
-    # This is a simplified, non-blocking start. A real implementation would use a background worker.
-    from ..scraper import process_feeds
-    from ..tts_generator import process_tts_queue
-    from ..video_renderer import process_render_queue
-
-    async def run_pipeline():
-        await log_event("pipeline", {"status": "starting", "stage": "ingest"})
-        process_feeds()
-        await log_event("pipeline", {"status": "running", "stage": "tts"})
-        process_tts_queue()
-        await log_event("pipeline", {"status": "running", "stage": "render"})
-        process_render_queue()
-        await log_event("pipeline", {"status": "complete"})
-
-    asyncio.create_task(run_pipeline())
+    from ..workers import run_full_pipeline
+    run_full_pipeline()
     return JSONResponse({"message": "Pipeline started in background."}, status_code=202)
 
 # --- Review & Playlist ---

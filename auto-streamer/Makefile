@@ -60,15 +60,6 @@ sample:
 		-e OPENAI_API_KEY=${OPENAI_API_KEY} \
 		$(IMAGE_NAME) python -m app.main all
 
-.PHONY: stream-dry
-stream-dry:
-	@echo "Testing stream output without publishing (-f null)..."
-	# This requires a more complex command to override the streamer's ffmpeg call.
-	# For now, this is a placeholder. A proper dry run would be a feature
-	# in the streamer.py module itself.
-	@echo "Dry run not implemented yet. This is a placeholder."
-
-
 .PHONY: clean
 clean:
 	@echo "Cleaning up output directory..."
