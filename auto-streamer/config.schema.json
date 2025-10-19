@@ -1,0 +1,336 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Auto-Streamer Configuration",
+  "description": "Configuration for the Auto-Streamer application",
+  "type": "object",
+  "properties": {
+    "ingest": {
+      "type": "object",
+      "properties": {
+        "rss_feeds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "max_items_per_run": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "dedupe_by": {
+          "type": "string",
+          "enum": ["guid_or_link", "guid", "link", "title"]
+        },
+        "min_pubdate_hours": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fetch_full_article": {
+          "type": "boolean"
+        },
+        "prefer_enclosures": {
+          "type": "boolean"
+        }
+      },
+      "required": ["rss_feeds"]
+    },
+    "fallback_urls": {
+      "type": "object",
+      "properties": {
+        "urls_to_scrape": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    },
+    "scraper": {
+      "type": "object",
+      "properties": {
+        "user_agent": {
+          "type": "string"
+        },
+        "timeout_s": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sleep_ms_between_requests": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "respect_robots": {
+          "type": "boolean"
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "fps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "crf": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 51
+        },
+        "preset": {
+          "type": "string",
+          "enum": ["ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow"]
+        }
+      }
+    },
+    "audio": {
+      "type": "object",
+      "properties": {
+        "sample_rate": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bitrate_kbps": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "bgm_path": {
+          "type": ["string", "null"]
+        },
+        "bgm_volume": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "tts": {
+      "type": "object",
+      "properties": {
+        "engine": {
+          "type": "string",
+          "enum": ["openai"]
+        },
+        "model": {
+          "type": "string"
+        },
+        "voice": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["mp3", "wav", "pcm"]
+        },
+        "speed": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 2.0
+        },
+        "chunk_chars": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timeout_s": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "api_key_env": {
+          "type": "string"
+        },
+        "base_url_env": {
+          "type": "string"
+        }
+      },
+      "required": ["engine", "model", "voice", "format", "api_key_env"]
+    },
+    "slides_per_audio": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "stream": {
+      "type": "object",
+      "properties": {
+        "rtmp_url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "stream_key": {
+          "type": "string"
+        },
+        "loop": {
+          "type": "boolean"
+        },
+        "reconnect_backoff_s": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tee_to": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "required": ["rtmp_url", "stream_key"]
+    },
+    "publish": {
+      "type": "object",
+      "properties": {
+        "require_approval": {
+          "type": "boolean"
+        },
+        "auto_start_stream": {
+          "type": "boolean"
+        },
+        "approval_ttl_min": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "safety_delay_s": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "auto_approval": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "mode": {
+              "type": "string",
+              "enum": ["off", "accept_all", "rules", "hybrid"]
+            },
+            "shadow_mode": {
+              "type": "boolean"
+            },
+            "rules": {
+              "type": "object",
+              "properties": {
+                "domain_whitelist": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "domain_blacklist": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "allow_languages": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "block_keywords": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "allow_keywords": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "title_regex_allow": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "title_regex_block": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "min_text_chars": {
+                  "type": "integer"
+                },
+                "max_text_chars": {
+                  "type": "integer"
+                },
+                "min_image": {
+                  "type": "object",
+                  "properties": {
+                    "width": {"type": "integer"},
+                    "height": {"type": "integer"}
+                  }
+                },
+                "min_pubdate_hours": {
+                  "type": "integer"
+                },
+                "max_pubdate_hours": {
+                  "type": "integer"
+                },
+                "duplicate_window_hours": {
+                  "type": "integer"
+                },
+                "similarity_threshold": {
+                  "type": "number"
+                },
+                "require_https": {
+                  "type": "boolean"
+                },
+                "nsfw_check": {
+                  "type": "object",
+                  "properties": {
+                    "enabled": {"type": "boolean"},
+                    "threshold": {"type": "number"}
+                  }
+                }
+              }
+            },
+            "confidence_scoring": {
+              "type": "object",
+              "properties": {
+                "weights": {
+                  "type": "object",
+                  "properties": {
+                    "source_trust": {"type": "number"},
+                    "freshness": {"type": "number"},
+                    "length_quality": {"type": "number"},
+                    "keywords": {"type": "number"},
+                    "nsfw_safety": {"type": "number"}
+                  }
+                },
+                "pass_score": {"type": "number"},
+                "soft_pass_score": {"type": "number"}
+              }
+            },
+            "auto_publish_strategy": {
+              "type": "string",
+              "enum": ["immediate", "schedule", "playlist_only"]
+            },
+            "insertion_policy": {
+              "type": "string",
+              "enum": ["append", "preempt", "after_current"]
+            }
+          }
+        }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "properties": {
+        "port": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 65535
+        },
+        "secure_cookie": {
+          "type": "boolean"
+        },
+        "theme": {
+          "type": "string",
+          "enum": ["system", "light", "dark"]
+        }
+      }
+    }
+  },
+  "required": ["ingest", "scraper", "output", "audio", "tts", "stream", "publish", "ui"]
+}

@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block header %}Review Queue{% endblock %}
+
+{% block content %}
+<div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="mb-4">
+        <h2 class="text-xl font-semibold">Items Awaiting Approval</h2>
+        <p class="text-gray-600">Review the following items before they are added to the playlist.</p>
+    </div>
+
+    <div id="review-queue"
+         hx-get="/api/v1/review/queue"
+         hx-trigger="load, every 15s"
+         hx-swap="innerHTML">
+
+        <!-- Loading state -->
+        <div class="text-center p-4">
+            <p class="text-gray-500">Loading review queue...</p>
+        </div>
+
+    </div>
+</div>
+
+<div id="review-list-target">
+{% for item in queue %}
+<div id="item-{{ item.id }}" class="bg-gray-50 border rounded-lg p-4 mb-4 flex flex-col md:flex-row gap-4">
+    <!-- Image Preview -->
+    <div class="flex-shrink-0">
+        <img src="/static/placeholder.jpg" alt="Image for {{ item.title }}" class="w-full md:w-48 h-auto rounded-md object-cover">
+        <!-- In a real app, this would be a dynamic path to the item's image -->
+    </div>
+
+    <!-- Item Details -->
+    <div class="flex-grow">
+        <h3 class="font-bold text-lg">{{ item.title }}</h3>
+        <p class="text-sm text-gray-500 mb-2">
+            Source: <a href="{{ item.source.link }}" target="_blank" class="text-blue-500 hover:underline">{{ item.source.link | truncate(40) }}</a>
+        </p>
+        <p class="text-gray-700 text-sm mb-4">
+            {{ item.original_text | truncate(300) }}
+        </p>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex-shrink-0 flex flex-col space-y-2 justify-center">
+        <button
+            hx-post="/api/v1/review/{{ item.id }}/approve"
+            hx-target="#item-{{ item.id }}"
+            hx-swap="outerHTML"
+            class="bg-green-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-700 transition duration-300">
+            Approve
+        </button>
+        <button
+            onclick="document.getElementById('reject-modal-{{ item.id }}').classList.remove('hidden')"
+            class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition duration-300">
+            Reject
+        </button>
+    </div>
+
+    <!-- Reject Modal -->
+    <div id="reject-modal-{{ item.id }}" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <h3 class="text-lg font-bold">Reject Item</h3>
+            <div class="mt-2">
+                <form hx-post="/api/v1/review/{{ item.id }}/reject" hx-target="#item-{{ item.id }}" hx-swap="outerHTML">
+                    <label for="reason" class="block text-sm font-medium text-gray-700">Reason (optional)</label>
+                    <input type="text" name="reason" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <div class="items-center px-4 py-3">
+                        <button type="submit" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                            Confirm Rejection
+                        </button>
+                        <button type="button" onclick="document.getElementById('reject-modal-{{ item.id }}').classList.add('hidden')" class="mt-2 px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% if not queue %}
+<div class="text-center p-4 border-dashed border-2 border-gray-300 rounded-lg">
+    <p class="text-gray-500">The review queue is empty.</p>
+</div>
+{% endif %}
+</div>
+{% endblock %}

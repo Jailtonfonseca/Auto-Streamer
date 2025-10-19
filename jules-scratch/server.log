@@ -1,0 +1,19 @@
+Manifest file not found at /app/auto-streamer/output/manifest.json. A new one will be created.
+INFO:     Started server process [18566]
+INFO:     Waiting for application startup.
+2025-10-19 00:13:45,785 - root - INFO - Logging configured. Level: INFO. Log file: /app/auto-streamer/output/logs/auto_streamer.log
+2025-10-19 00:13:45,785 - auto-streamer.app.config - INFO - Loading configuration from: /app/auto-streamer/config.json
+2025-10-19 00:13:45,797 - auto-streamer.app.config - INFO - Checking for environment variable overrides...
+2025-10-19 00:13:45,797 - auto-streamer.app.config - INFO - Overriding setting 'stream.rtmp_url' with value from env var 'RTMP_URL'.
+2025-10-19 00:13:45,797 - auto-streamer.app.config - INFO - Overriding setting 'stream.stream_key' with value from env var 'STREAM_KEY'.
+2025-10-19 00:13:45,797 - auto-streamer.app.config - INFO - Overriding setting 'tts.api_key' with value from env var 'OPENAI_API_KEY'.
+2025-10-19 00:13:45,797 - auto-streamer.app.config - INFO - Overriding setting 'security.admin_pass_hash' with value from env var 'ADMIN_PASS_HASH'.
+2025-10-19 00:13:45,797 - auto-streamer.app.config - INFO - Configuration loaded and validated successfully.
+2025-10-19 00:13:45,797 - auto-streamer.app.web.server - INFO - Auto-Streamer application started.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+INFO:     127.0.0.1:36890 - "GET /login HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36890 - "POST /login HTTP/1.1" 303 See Other
+INFO:     127.0.0.1:36890 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36890 - "GET /api/v1/status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36890 - "GET /api/v1/logs/stream HTTP/1.1" 200 OK
