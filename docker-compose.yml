@@ -9,6 +9,7 @@ services:
     volumes:
       - ./output:/app/output
       - ./config.json:/app/config.json
+    user: "${UID:-1000}:${GID:-1000}"
     environment:
       - TZ=America/Sao_Paulo
       - RTMP_URL=${RTMP_URL}

@@ -80,7 +80,12 @@ export UI_PORT=8080
 The easiest way to run the application is with Docker Compose.
 
 **1. Create a `.env` file:**
-Create a file named `.env` in the root of the project and add the following variables. This is the most secure way to manage your secrets.
+You can create the `.env` file automatically with the correct user permissions by running this command in your terminal:
+```bash
+echo -e "UID=$(id -u)\nGID=$(id -g)" > .env
+```
+
+Then, add the following secret variables to the `.env` file. This is the most secure way to manage your secrets.
 
 ```dotenv
 # Your streaming service's RTMP URL
