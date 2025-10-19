@@ -27,8 +27,7 @@
 <div id="item-{{ item.id }}" class="bg-gray-50 border rounded-lg p-4 mb-4 flex flex-col md:flex-row gap-4">
     <!-- Image Preview -->
     <div class="flex-shrink-0">
-        <img src="/static/placeholder.jpg" alt="Image for {{ item.title }}" class="w-full md:w-48 h-auto rounded-md object-cover">
-        <!-- In a real app, this would be a dynamic path to the item's image -->
+        <img src="{{ item.paths.image.replace('output/', '/output/') }}" alt="Image for {{ item.title }}" class="w-full md:w-48 h-auto rounded-md object-cover">
     </div>
 
     <!-- Item Details -->
