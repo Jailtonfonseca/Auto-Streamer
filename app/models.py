@@ -9,7 +9,8 @@ data consistency across different parts of the application.
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Dict, List, Literal, Optional, TypedDict
+from typing import Dict, List, Optional
+from typing_extensions import Literal, TypedDict
 from pydantic import BaseModel, Field
 
 # --- Enums for State and other controlled vocabularies ---

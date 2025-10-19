@@ -19,9 +19,9 @@ from jsonschema.exceptions import ValidationError
 logger = logging.getLogger(__name__)
 
 # Define the base path for the application
-# Assumes config.py is in auto-streamer/app/
-APP_DIR = Path(__file__).parent.resolve()
-ROOT_DIR = APP_DIR.parent
+# Assumes the project is run from the root directory.
+ROOT_DIR = Path.cwd()
+APP_DIR = ROOT_DIR / "app"
 
 class ConfigError(Exception):
     """Custom exception for configuration errors."""

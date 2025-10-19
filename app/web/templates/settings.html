@@ -55,27 +55,5 @@
         </div>
     </form>
 
-    <!-- Test Buttons -->
-    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <button
-            hx-post="/api/v1/config/test/scraper"
-            hx-swap="none"
-            class="bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300">
-            Test Scraper
-        </button>
-        <button
-            hx-post="/api/v1/config/test/tts"
-            hx-swap="none"
-            class="bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300">
-            Test TTS
-        </button>
-        <button
-            hx-post="/api/v1/config/test/rtmp"
-            hx-swap="none"
-            class="bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-300">
-            Test RTMP
-        </button>
-    </div>
-
 </div>
 {% endblock %}
