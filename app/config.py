@@ -112,14 +112,6 @@ class Config:
 
                 d[keys[-1]] = value
 
-        # Special handling for OpenAI API key from its env var
-        api_key_env_name = self._settings.get("tts", {}).get("api_key_env")
-        if api_key_env_name and os.getenv(api_key_env_name):
-             self._settings["tts"]["api_key"] = os.getenv(api_key_env_name)
-
-        base_url_env_name = self._settings.get("tts", {}).get("base_url_env")
-        if base_url_env_name and os.getenv(base_url_env_name):
-             self._settings["tts"]["base_url"] = os.getenv(base_url_env_name)
 
 
     def get(self, key: str, default: Any = None) -> Any:
@@ -144,13 +136,12 @@ class Config:
         """Returns a copy of all settings."""
         return self._settings.copy()
 
-    def save(self, new_settings: Dict[str, Any]) -> None:
+    def save(self) -> None:
         """
-        Saves the updated configuration to the file.
+        Saves the current in-memory settings to the configuration file.
         This method is thread-safe.
         """
         with self._lock:
-            # Create a backup of the current config file
             if self._config_path.exists():
                 backup_path = self._config_path.with_suffix(".json.bak")
                 try:
@@ -160,38 +151,33 @@ class Config:
                     logger.warning(f"Failed to create configuration backup: {e}")
 
             try:
-                # Merge the new settings into the current settings
-                # We do this to preserve any settings not exposed in the UI
-                for key, value in new_settings.items():
-                    if value is not None and value != "":
-                        # This is a simple merge. For nested dicts, a deep merge would be needed.
-                        # For now, we are only updating top-level keys in nested dicts.
-                        if key == "rtmp_url":
-                            self._settings["stream"]["rtmp_url"] = value
-                        elif key == "stream_key":
-                            self._settings["stream"]["stream_key"] = value
-                        elif key == "openai_api_key":
-                            self._settings["tts"]["api_key"] = value
-                        elif key == "admin_pass_hash":
-                            # This key might not exist, so we add it under a 'security' section
-                            self._settings.setdefault("security", {})["admin_pass_hash"] = value
-
-                # Validate before saving
                 self._validate(self._settings)
-
-                # Write the updated settings to the config file
                 with open(self._config_path, "w", encoding="utf-8") as f:
                     json.dump(self._settings, f, indent=2)
-
                 logger.info(f"Configuration saved successfully to {self._config_path}")
-
             except ValidationError as e:
-                logger.error(f"Validation failed while saving new configuration: {e}")
-                # Optionally, restore from backup here
+                logger.error(f"Validation failed while saving configuration: {e}")
                 raise ConfigError(f"New configuration is invalid: {e.message}")
             except Exception as e:
                 logger.exception("An unexpected error occurred while saving the configuration.")
                 raise ConfigError(f"Could not save configuration file: {e}")
+
+    def update(self, new_settings: Dict[str, Any]) -> None:
+        """
+        Updates the in-memory configuration with new settings.
+        This performs a deep merge and is not thread-safe by itself.
+        """
+        def _deep_merge(source, destination):
+            for key, value in source.items():
+                if isinstance(value, dict):
+                    node = destination.setdefault(key, {})
+                    _deep_merge(value, node)
+                elif value is not None and value != "":
+                     destination[key] = value
+            return destination
+
+        with self._lock:
+            self._settings = _deep_merge(new_settings, self._settings)
 
 # --- Singleton Instance ---
 # This part creates a single, globally accessible configuration object.

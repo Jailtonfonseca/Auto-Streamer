@@ -123,29 +123,18 @@ class VideoRenderer:
         output_with_bgm_path = video_path.with_name(f"{video_path.stem}_bgm.mp4")
         bgm_volume = self.audio_cfg.get("bgm_volume", 0.15)
 
-        # FFmpeg filtergraph to mix audio. 'amerge' merges, 'volume' adjusts BGM level.
-        # 'pan' maps the merged stereo to a standard stereo layout.
-        # '-shortest' ensures output ends with the video stream.
-        filter_complex = (
-            f"[0:a][1:a]amerge=inputs=2[a];"
-            f"[a]volume=1.0[a_main];" # This is a placeholder, assuming main audio is already correct
-            f"[1:a]volume={bgm_volume}[a_bgm];"
-            f"[0:a][a_bgm]amix=inputs=2:duration=first:dropout_transition=3[a_out]"
-        )
-
-        # A simpler filter that might work better if the above is complex
-        simple_filter = f"[0:a]volume=1.0[a0]; [1:a]volume={bgm_volume}[a1]; [a0][a1]amix=inputs=2:duration=first"
-
+        # A simpler filter that is more reliable for mixing a main audio track with background music.
+        filter_complex = f"[0:a]volume=1.0[a0]; [1:a]volume={bgm_volume}[a1]; [a0][a1]amix=inputs=2:duration=first"
 
         ffmpeg_args = [
             "-y",
-            "-i", str(video_path),          # Input video
-            "-i", str(bgm_path),            # Input BGM
-            "-filter_complex", simple_filter,
-            "-map", "0:v",                  # Map video from first input
-            "-map", "[a_out]",              # Map mixed audio
-            "-c:v", "copy",                 # Copy video stream without re-encoding
-            "-c:a", "aac",                  # Re-encode audio to AAC
+            "-i", str(video_path),
+            "-i", str(bgm_path),
+            "-filter_complex", filter_complex,
+            "-map", "0:v",
+            "-map", "[amix]",  # Output of the amix filter
+            "-c:v", "copy",
+            "-c:a", "aac",
             "-b:a", f"{self.audio_cfg.get('bitrate_kbps', 128)}k",
             "-shortest",
             str(output_with_bgm_path),
@@ -205,8 +194,8 @@ class VideoRenderer:
 
 def process_render_queue():
     """
-    Renders clips for all items in the TTS_DONE state and then
-    concatenates them into a single video if there are any.
+    Renders clips for all items in the TTS_DONE state. If all items in a
+    single run succeed, they are concatenated into a final video.
     """
     logger.info("Checking for items ready for video rendering...")
     items_to_process = manifest.get_by_state(ItemState.TTS_DONE)
@@ -216,20 +205,24 @@ def process_render_queue():
         return
 
     renderer = VideoRenderer()
-    processed_items = []
+    successful_items = []
     fail_count = 0
 
     for item in items_to_process:
         if renderer.process_item(item):
-            # Reload item from manifest to get the updated clip path
-            updated_item = manifest.get_by_id(item['id'])
-            if updated_item:
-                processed_items.append(updated_item)
+            # The item in memory is now stale; reload it to get the clip path
+            reloaded_item = manifest.get_by_id(item['id'])
+            if reloaded_item:
+                successful_items.append(reloaded_item)
         else:
             fail_count += 1
-            manifest.update_item(item['id'], {"state": ItemState.ERROR, "notes": "Video rendering failed"})
+            manifest.update_item(item['id'], {"state": ItemState.ERROR, "notes": "Video clip rendering failed"})
 
-    if processed_items:
-        renderer.create_final_video(processed_items)
+    # Only proceed to concatenation if all items were processed successfully
+    if fail_count == 0 and successful_items:
+        logger.info(f"All {len(successful_items)} clips rendered successfully. Proceeding to final video creation.")
+        renderer.create_final_video(successful_items)
+    elif successful_items:
+        logger.warning(f"Rendered {len(successful_items)} clips, but {fail_count} failed. Final video will not be created yet.")
 
-    logger.info(f"Video rendering run complete. Succeeded clips: {len(processed_items)}, Failed clips: {fail_count}")
+    logger.info(f"Video rendering run complete. Succeeded clips: {len(successful_items)}, Failed clips: {fail_count}")
