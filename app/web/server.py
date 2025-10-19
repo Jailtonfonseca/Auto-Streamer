@@ -41,6 +41,7 @@ metrics.setup_metrics_middleware(app)
 # --- Static Files and Templates ---
 WEB_DIR = Path(__file__).parent.resolve()
 app.mount("/static", StaticFiles(directory=WEB_DIR / "static"), name="static")
+app.mount("/output", StaticFiles(directory=OUTPUT_DIR), name="output")
 templates = Jinja2Templates(directory=WEB_DIR / "templates")
 
 # --- Helper Functions ---

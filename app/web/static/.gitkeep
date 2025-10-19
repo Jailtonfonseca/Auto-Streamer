@@ -1,0 +1,1 @@
+# This file prevents the directory from being empty, ensuring it's copied by Docker.
