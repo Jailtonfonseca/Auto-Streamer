@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block header %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Pipeline Controls -->
+    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-bold mb-4">Pipeline Controls</h2>
+        <div class="space-y-4">
+            <button
+                hx-post="/api/v1/pipeline/start"
+                hx-swap="none"
+                class="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition duration-300">
+                Run Ingest & Render
+            </button>
+            <p class="text-sm text-gray-500">
+                This will start the full pipeline: Ingest RSS -> Scrape URLs -> Generate TTS -> Render Video. The stream will not start automatically.
+            </p>
+        </div>
+    </div>
+
+    <!-- Stream Controls -->
+    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow">
+        <h2 class="text-xl font-bold mb-4">Stream Controls</h2>
+        <div class="space-y-4">
+            <button
+                hx-post="/api/v1/publish/start"
+                hx-swap="none"
+                class="w-full bg-green-600 text-white font-bold py-2 px-4 rounded hover:bg-green-700 transition duration-300">
+                Start Streaming
+            </button>
+            <button
+                hx-post="/api/v1/publish/stop"
+                hx-swap="none"
+                class="w-full bg-red-600 text-white font-bold py-2 px-4 rounded hover:bg-red-700 transition duration-300">
+                Stop Streaming
+            </button>
+            <p class="text-sm text-gray-500">
+                Starts or stops the RTMP stream using the 'final_video.mp4'. Assumes the video has been rendered.
+            </p>
+        </div>
+    </div>
+
+    <!-- Status Overview -->
+    <div
+        class="md:col-span-1 bg-white p-6 rounded-lg shadow"
+        hx-get="/api/v1/status"
+        hx-trigger="load, every 5s"
+        hx-swap="innerHTML">
+        <!-- Status will be loaded here by HTMX -->
+        <h2 class="text-xl font-bold mb-4">System Status</h2>
+        <div class="space-y-2">
+            <p><strong>Streaming:</strong> <span class="text-gray-500">Loading...</span></p>
+            <p><strong>Pipeline:</strong> <span class="text-gray-500">Loading...</span></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+# Core Application
+requests
+beautifulsoup4
+trafilatura
+mutagen
+Pillow
+jsonschema
+tenacity
+feedparser
+openai>=1.40.0
+
+# Web Server & API
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+sse-starlette
+starlette-exporter
+psutil
+bcrypt
+itsdangerous
+
+# Optional Auto-Approval Features (commented out by default)
+# langdetect
+# tldextract
+# better-profanity

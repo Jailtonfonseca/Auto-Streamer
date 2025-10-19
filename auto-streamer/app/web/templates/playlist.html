@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block header %}Playlist{% endblock %}
+
+{% block content %}
+<div class="bg-white p-6 rounded-lg shadow-md">
+    <div class="mb-4 flex justify-between items-center">
+        <div>
+            <h2 class="text-xl font-semibold">Approved Playlist</h2>
+            <p class="text-gray-600">These items will be included in the next 'final_video.mp4' render.</p>
+        </div>
+        <button
+            hx-get="/api/v1/playlist"
+            hx-target="#playlist-content"
+            hx-swap="innerHTML"
+            class="bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-600 transition duration-300">
+            Refresh
+        </button>
+    </div>
+
+    <div id="playlist-content"
+         hx-get="/api/v1/playlist"
+         hx-trigger="load, every 30s"
+         hx-swap="innerHTML">
+
+        <!-- Loading state -->
+        <div class="text-center p-4">
+            <p class="text-gray-500">Loading playlist...</p>
+        </div>
+    </div>
+</div>
+
+<div id="playlist-items-target">
+    {% if playlist %}
+    <div class="space-y-3 mt-4">
+    {% for item in playlist %}
+    <div id="item-{{ item.id }}" class="bg-gray-50 border rounded-lg p-3 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <!-- Drag handle (for future implementation) -->
+            <svg class="w-5 h-5 text-gray-400 cursor-grab" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+            <span class="font-medium">{{ item.title }}</span>
+        </div>
+        <div class="text-sm text-gray-500">
+            <span>Duration: {{ "%.2f"|format(item.duration_s) }}s</span>
+            <span class="ml-4">Approved by: <span class="font-semibold">{{ item.approved_by }}</span></span>
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center p-8 border-dashed border-2 border-gray-300 rounded-lg mt-4">
+        <p class="text-gray-500">The playlist is empty. Approve items from the review queue to add them.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
