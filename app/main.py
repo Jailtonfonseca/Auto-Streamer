@@ -16,7 +16,6 @@ import sys
 
 from app.config import app_config, ConfigError
 from app.utils import setup_logging, setup_paths
-from app.web.server import app as fastapi_app
 
 # Set up logging early
 logger = logging.getLogger("main")
@@ -81,6 +80,7 @@ def main():
     if args.command == "serve":
         import uvicorn
         from app.workers import worker_manager
+        from app.web.server import app as fastapi_app
 
         # Start background workers for pipeline tasks
         worker_manager.start()
