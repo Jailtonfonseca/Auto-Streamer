@@ -28,6 +28,10 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy the entrypoint script and make it executable *before* creating the non-root user
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
 # Create a non-root user to run the application
 RUN useradd --system --create-home appuser
 RUN chown -R appuser:appuser /app
@@ -46,10 +50,6 @@ EXPOSE 8080
 # This calls the internal validation command, which is a good check.
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD ["python", "-m", "app.main", "validate"]
-
-# Copy the entrypoint script and make it executable
-COPY entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Set the entrypoint to our custom script
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
