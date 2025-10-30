@@ -10,10 +10,12 @@ ENV PYTHONUNBUFFERED=1 \
 # - ffmpeg: for video and audio processing
 # - git: for pulling dependencies if needed (good practice)
 # - tini: a minimal init system for containers
+# - gosu: a lightweight tool for dropping root privileges
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     ffmpeg \
     git \
+    gosu \
     tini \
     fonts-dejavu-core \
     && apt-get clean \
@@ -45,9 +47,13 @@ EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD ["python", "-m", "app.main", "validate"]
 
-# Set tini as the entrypoint to handle signals properly
-ENTRYPOINT ["/usr/bin/tini", "--"]
+# Copy the entrypoint script and make it executable
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+# Set the entrypoint to our custom script
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Default command to run the web server
-# The port can be overridden by the UI_PORT environment variable.
+# This command is passed to the entrypoint script
 CMD ["python", "-m", "app.main", "serve", "--host", "0.0.0.0"]
