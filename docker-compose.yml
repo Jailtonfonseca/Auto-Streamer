@@ -4,8 +4,6 @@ services:
   auto-streamer:
     build: .
     container_name: auto-streamer
-    env_file:
-      - .env
     ports:
       - "${UI_PORT:-8080}:8080"
     volumes:
