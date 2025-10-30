@@ -1,0 +1,14 @@
+# Ignore the .git directory
+.git
+# Ignore the data directory
+/data
+# Ignore the config.json file
+config.json
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+# Ignore IDE files
+.idea/
+.vscode/

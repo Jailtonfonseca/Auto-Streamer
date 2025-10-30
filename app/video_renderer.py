@@ -123,8 +123,16 @@ class VideoRenderer:
         output_with_bgm_path = video_path.with_name(f"{video_path.stem}_bgm.mp4")
         bgm_volume = self.audio_cfg.get("bgm_volume", 0.15)
 
-        # A simpler filter that is more reliable for mixing a main audio track with background music.
-        filter_complex = f"[0:a]volume=1.0[a0]; [1:a]volume={bgm_volume}[a1]; [a0][a1]amix=inputs=2:duration=first"
+        # This filter chain is more robust:
+        # 1. [1:a]aloop=loop=-1:size=2e+09 -> Loop the BGM indefinitely.
+        # 2. [0:a]...[a0]; [1:a]...[a1] -> Prepare audio streams.
+        # 3. [a0][a1]amix=inputs=2:duration=first -> Mix them.
+        filter_complex = (
+            f"[1:a]aloop=loop=-1:size=2e+09[bgm];"
+            f"[0:a]volume=1.0[main];"
+            f"[bgm]volume={bgm_volume}[bgm_vol];"
+            f"[main][bgm_vol]amix=inputs=2:duration=first"
+        )
 
         ffmpeg_args = [
             "-y",

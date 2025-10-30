@@ -20,7 +20,8 @@ psutil
 bcrypt
 itsdangerous
 
-# Optional Auto-Approval Features (commented out by default)
+# Optional Auto-Approval Features
+langchain
 # langdetect
 # tldextract
 # better-profanity

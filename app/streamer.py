@@ -58,7 +58,6 @@ class Streamer:
         command.extend([
             "-c:v", "copy",  # Copy video stream without re-encoding
             "-c:a", "copy",  # Copy audio stream without re-encoding
-            "-f", "flv",     # Force format to Flash Video for RTMP
         ])
 
         # Handle multistreaming with the "tee" muxer
@@ -67,10 +66,10 @@ class Streamer:
             output_urls = [self.full_rtmp_url] + tee_outputs
             # Format for tee muxer: "[f=flv]rtmp_url1|[f=flv]rtmp_url2"
             tee_arg = "|".join([f"[f=flv]{url}" for url in output_urls])
-            command.extend(["-map", "0", tee_arg])
+            command.extend(["-f", "tee", "-map", "0", tee_arg])
         else:
             # Single output
-            command.append(self.full_rtmp_url)
+            command.extend(["-f", "flv", self.full_rtmp_url])
 
         return command
 
