@@ -40,8 +40,7 @@ RUN chown -R appuser:appuser /app
 COPY . .
 RUN chown -R appuser:appuser /app
 
-# Switch to the non-root user
-USER appuser
+# The user will be switched in the entrypoint script.
 
 # Expose the port the web UI will run on
 EXPOSE 8080
