@@ -8,6 +8,12 @@ chown -R appuser:appuser /data
 
 # If config.json doesn't exist, copy the example.
 # This handles the case where a directory is created by Docker's volume mounting.
+if [ -d "/app/config.json" ]; then
+    echo "Warning: /app/config.json is a directory. Removing it."
+    rm -rf /app/config.json
+fi
+
+# If config.json doesn't exist as a regular file, create it from the example.
 if [ ! -f "/app/config.json" ]; then
     echo "Config.json not found. Copying from example..."
     cp /app/app/config.json.example /app/config.json
