@@ -247,10 +247,10 @@ async def update_config(
         )
 
     try:
-        # Save the filtered updates
-        config.app_config.save(filtered_updates)
-        # Reload the configuration in the running application
-        config.app_config.load()
+        # Update the in-memory config, then save it to the file
+        config.app_config.update(filtered_updates)
+        config.app_config.save()
+        # No need to reload, as the in-memory object is already updated.
         await log_event("config", {"status": "updated", "keys": list(filtered_updates.keys())})
 
         return HTMLResponse(

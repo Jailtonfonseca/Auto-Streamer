@@ -47,11 +47,15 @@ class TTSGenerator:
         if len(text) <= chunk_size:
             return [text]
 
-        import textwrap
+        from langchain.text_splitter import RecursiveCharacterTextSplitter
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=chunk_size,
+            chunk_overlap=100,
+            separators=["\n\n", "\n", ". ", " ", ""]
+        )
 
-        # Use textwrap to handle the basic splitting
-        chunks = textwrap.wrap(text, chunk_size, break_long_words=True, replace_whitespace=False)
-        logger.info(f"Split text into {len(chunks)} chunks.")
+        chunks = text_splitter.split_text(text)
+        logger.info(f"Split text into {len(chunks)} chunks using intelligent splitter.")
         return chunks
 
     @network_retry

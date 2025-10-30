@@ -84,9 +84,9 @@ class Config:
         env_overrides = {
             "RTMP_URL": ("stream", "rtmp_url"),
             "STREAM_KEY": ("stream", "stream_key"),
-            "OPENAI_API_KEY": ("tts", "api_key"), # Note: schema expects api_key_env, we are setting a value directly
+            "OPENAI_API_KEY": ("tts", "api_key"),
             "OPENAI_BASE_URL": ("tts", "base_url"),
-            "ADMIN_PASS_HASH": ("security", "admin_pass_hash"), # Assumes security section exists
+            "ADMIN_PASS_HASH": ("security", "admin_pass_hash"),
             "UI_PORT": ("ui", "port"),
         }
 
@@ -173,7 +173,7 @@ class Config:
                     node = destination.setdefault(key, {})
                     _deep_merge(value, node)
                 elif value is not None and value != "":
-                     destination[key] = value
+                    destination[key] = value
             return destination
 
         with self._lock:

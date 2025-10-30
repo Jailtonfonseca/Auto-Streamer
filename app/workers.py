@@ -107,7 +107,13 @@ def run_full_pipeline():
         tts_generator.process_tts_queue()
 
         logger.info("Stage 3: Rendering video from TTS items.")
-        video_renderer.process_render_queue()
+        # Only render if there are items ready, otherwise the final video might be empty
+        from .manifest import manifest
+        from .models import ItemState
+        if manifest.get_by_state(ItemState.TTS_DONE):
+             video_renderer.process_render_queue()
+        else:
+             logger.info("Skipping render stage: no TTS-complete items.")
 
         logger.info("--- Full Pipeline Run Finished ---")
 

@@ -140,3 +140,7 @@ class UpdateConfigRequest(BaseModel):
     stream_key: Optional[str] = Field(None, description="The stream key for the RTMP endpoint.")
     openai_api_key: Optional[str] = Field(None, description="The API key for OpenAI TTS.")
     admin_pass_hash: Optional[str] = Field(None, description="A new bcrypt hash for the admin password.")
+
+    class Config:
+        """Pydantic model configuration."""
+        extra = "ignore"

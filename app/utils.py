@@ -123,16 +123,19 @@ def run_ffmpeg(
 
     stderr_output = []
 
-    # Stream stderr line by line
+    # Real-time streaming of stderr
+    # Using a queue and a separate thread is a more robust way to handle this,
+    # but for simplicity, we'll read line by line directly.
     if process.stderr:
         for line in iter(process.stderr.readline, ''):
             line = line.strip()
             if line:
                 stderr_output.append(line)
+                logger.debug(line)  # Tee to logs
                 if stream_output:
-                    yield line
-                logger.debug(line)
+                    yield line  # Yield to caller
 
+    # Wait for the process to complete
     process.wait()
 
     if process.returncode != 0:
