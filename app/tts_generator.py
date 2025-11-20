@@ -47,7 +47,7 @@ class TTSGenerator:
         if len(text) <= chunk_size:
             return [text]
 
-        from langchain.text_splitter import RecursiveCharacterTextSplitter
+        from langchain_text_splitters import RecursiveCharacterTextSplitter
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=100,

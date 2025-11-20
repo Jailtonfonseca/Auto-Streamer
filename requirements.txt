@@ -22,6 +22,7 @@ itsdangerous
 
 # Optional Auto-Approval Features
 langchain
+langchain-text-splitters
 # langdetect
 # tldextract
 # better-profanity
