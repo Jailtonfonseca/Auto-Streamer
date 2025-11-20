@@ -9,8 +9,8 @@ This module is responsible for:
 - Updating the manifest item with the paths to the generated clip and final video.
 """
 import logging
+import typing
 from pathlib import Path
-from typing import List
 
 from .config import app_config
 from .manifest import manifest
@@ -80,7 +80,7 @@ class VideoRenderer:
             logger.error(f"Failed to render clip for item {item_id}: {e}")
             return False
 
-    def _concatenate_clips(self, clip_paths: List[Path], final_video_path: Path) -> bool:
+    def _concatenate_clips(self, clip_paths: typing.List[Path], final_video_path: Path) -> bool:
         """
         Concatenates a list of video clips into a single video file.
         """
@@ -164,7 +164,7 @@ class VideoRenderer:
         """Renders a clip for a single manifest item."""
         return self._render_clip(item)
 
-    def create_final_video(self, items: List[ManifestItem]) -> Optional[Path]:
+    def create_final_video(self, items: typing.List[ManifestItem]) -> typing.Optional[Path]:
         """
         Creates the final video by concatenating clips from the given items.
         """
