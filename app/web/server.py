@@ -17,7 +17,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sse_starlette.sse import EventSourceResponse
 
-from .. import config, manifest, metrics, security, streamer
+from .. import config, metrics, security, streamer
+from ..manifest import manifest
 from ..models import ItemState, ManifestItem, UpdateConfigRequest
 from ..utils import format_sse, OUTPUT_DIR
 
