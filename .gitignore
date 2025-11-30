@@ -130,5 +130,5 @@ jules-scratch/
 output/
 data/
 *.log
-config.json
+# config.json
 config.json.bak
