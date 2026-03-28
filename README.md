@@ -165,3 +165,18 @@ python -m app.main approve --id <ITEM_ID>
 - **OpenAI Errors**: Verify your `OPENAI_API_KEY` and check your OpenAI account for billing issues.
 - **Permission Errors**: If you see permission errors on startup, ensure the `output` directory on your host machine is writable by the user running Docker.
 - **ARM64 Performance**: On devices like Raspberry Pi or Orange Pi, video rendering can be slow. Use the `veryfast` or `superfast` preset in your `config.json` and stick to 720p resolution for best results.
+
+## 🌐 Conecte-se comigo
+
+*   **Instagram:** [jailton_fon](https://instagram.com/jailton_fon)
+*   **Facebook:** Zfonseca
+Julio Fonseca - fonseca@123.com
+*   **TikTok:** [@fonsecac41](https://tiktok.com/@fonsecac41)
+*   **Twitch:** [fonsecac41](https://twitch.tv/fonsecac41)
+*   **YouTube:** [@JailtonFonseca](https://www.youtube.com/@JailtonFonseca)
+
+📍 **Brasil** 🇧🇷
+
+---
+
+**Desenvolvido por Jailtonfonseca**
